@@ -14,7 +14,7 @@ import (
 type StubPlayerStore struct{
 	scores map[string]int
 	winCalls []string
-	league []Player
+	league League
 }
 
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
@@ -25,7 +25,7 @@ func (s *StubPlayerStore) RecordWin(name string) {
 	s.winCalls = append(s.winCalls, name)
 }
 
-func(s *StubPlayerStore) GetLeague() []Player {
+func(s *StubPlayerStore) GetLeague() League {
 	return s.league
 }
 
@@ -34,7 +34,7 @@ func TestGETPlayers(t *testing.T) {
 	playerStore := StubPlayerStore{
 		map[string]int{"jo": 20, "billy":50},
 		[]string{},
-		[]Player{},
+		League{},
 	}
 	server := NewPlayerServer(&playerStore)
 
@@ -68,7 +68,7 @@ func TestStoreWins(t *testing.T) {
 	playerStore := StubPlayerStore{
 		map[string]int{"jo": 20, "billy":50},
 		[]string{},
-		[]Player{},
+		League{},
 	}
 	server := NewPlayerServer(&playerStore)
 
@@ -100,7 +100,7 @@ func TestLeague(t *testing.T) {
 	
 	t.Run("return league table as json", func(t *testing.T) {
 		
-		wantedLeague := []Player{
+		wantedLeague := League{
 			{"Cleo", 32},
 			{"Chris", 20},
 			{"Tiest", 14},
@@ -119,6 +119,7 @@ func TestLeague(t *testing.T) {
 		assertContentType(t, *response, jsonContentType)
 	})
 }
+
 
 func newGetScoreRequest(name string) (*http.Request) {
 	request, _ := http.NewRequest(http.MethodGet, "/players/"+name, nil)
@@ -149,7 +150,7 @@ func newLeagueRequest() *http.Request {
 	return request
 }
 
-func getLeagueFromResponse(t testing.TB, body io.Reader) (league []Player) {
+func getLeagueFromResponse(t testing.TB, body io.Reader) (league League) {
 	t.Helper()
 	err := json.NewDecoder(body).Decode(&league)
 	
@@ -160,7 +161,7 @@ func getLeagueFromResponse(t testing.TB, body io.Reader) (league []Player) {
 	return
 }
 
-func assertLeague(t testing.TB, got, want []Player) {
+func assertLeague(t testing.TB, got, want League) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, wanted %v", got, want)
