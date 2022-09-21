@@ -1,4 +1,4 @@
-package main
+package poker
 
 import (
 	"net/http"
@@ -8,39 +8,39 @@ import (
 
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 
-	database, cleanDatabase := createTempFile(t, `[]`)
+	database, cleanDatabase := CreateTempFile(t, `[]`)
 	defer cleanDatabase()
 	store, err := NewFileSystemPlayerStore(database)
-	assertNoError(t, err)
+	AssertNoError(t, err)
 	server := NewPlayerServer(store)
 	player := "jo"
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
-	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
-	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), NewPostWinRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), NewPostWinRequest(player))
+	server.ServeHTTP(httptest.NewRecorder(), NewPostWinRequest(player))
 
 	t.Run("get score", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetScoreRequest(player))
+		server.ServeHTTP(response, NewGetScoreRequest(player))
 		
-		assertStatus(t, response.Code, http.StatusOK)
-		assertResponseBody(t, response.Body.String(), "3")
+		AssertStatus(t, response.Code, http.StatusOK)
+		AssertResponseBody(t, response.Body.String(), "3")
 	})
 
 	t.Run("get league", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newLeagueRequest())
-		got := getLeagueFromResponse(t, response.Body)
+		server.ServeHTTP(response, NewLeagueRequest())
+		got := GetLeagueFromResponse(t, response.Body)
 
-		assertStatus(t, response.Code, http.StatusOK)
-		assertLeague(t, got, League{
+		AssertStatus(t, response.Code, http.StatusOK)
+		AssertLeague(t, got, League{
 			{"jo", 3},
 		})
 	})
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetScoreRequest(player))
+	server.ServeHTTP(response, NewGetScoreRequest(player))
 
-	assertStatus(t, response.Code, http.StatusOK)
-	assertResponseBody(t, response.Body.String(), "3")
+	AssertStatus(t, response.Code, http.StatusOK)
+	AssertResponseBody(t, response.Body.String(), "3")
 }
